@@ -35,7 +35,7 @@ if ((isset($def["BODY_BACKGROUND"])) && (!empty($def["BODY_BACKGROUND"]))) {
 } else {
 	echo "
 	BODY {
-		background-color: #ffffff;
+		background-color: #f8fafc;
 	}\n";
 }
 if ((isset($def["COLOR_LINK"])) && (!empty($def["COLOR_LINK"]))) {
@@ -48,7 +48,7 @@ if ((isset($def["COLOR_LINK"])) && (!empty($def["COLOR_LINK"]))) {
 	echo "
 	a,
 	a.menuButton span {
-		color: #336699;
+		color: #2b5c8f;
 	}\n";
 }
 if ((isset($def["HEADING"])) && (!empty($def["HEADING"]))) {
@@ -75,7 +75,7 @@ if ((isset($def["HEADING"])) && (!empty($def["HEADING"]))) {
 	.bt-acq,
 	.bt-opac,
 	.modal {
-		background-color: #003366;
+		background-color: #1a365d;
 	}\n";
 }
 
@@ -90,6 +90,7 @@ if ((isset($def["HEADING_FONTCOLOR"])) && (!empty($def["HEADING_FONTCOLOR"]))) {
 	.bt-loan,
 	.bt-acq,
 	.bt-opac,
+	.user-badge,
 	.modal {
 		color: ".$def["HEADING_FONTCOLOR"].";
 	}\n";
@@ -120,7 +121,7 @@ if ((isset($def["TOOLBAR"])) && (!empty($def["TOOLBAR"]))) {
 	echo "
 	div.toolbar-dataentry,
 	body.toolbar-dataentry {
-		background-color: #f8f8f8;
+		background-color: #f1f5f9;
 	}\n";
 }
 if ((isset($def["USERINFO_FONTCOLOR"])) && (!empty($def["USERINFO_FONTCOLOR"]))) {
@@ -172,7 +173,7 @@ if ((isset($def["SECTIONINFO"])) && (!empty($def["SECTIONINFO"]))){
 	.bt-cat.active,
 	.bt-loan.active,
 	.bt-acq.active  {
-		background-color: #336699;
+		background-color: #2c5282;
 	}\n";
 }
 if ((isset($def["SECTIONINFO_FONTCOLOR"])) && (!empty($def["SECTIONINFO_FONTCOLOR"]))) {
@@ -210,7 +211,7 @@ if ((isset($def["HELPER_FONTCOLOR"])) && (!empty($def["HELPER_FONTCOLOR"]))) {
 	echo "
 	.helper,
 	.helper a{
-		color: #666666;
+		color: #4a5568;
 	}\n";
 }
 if ((isset($def["FOOTER"])) && (!empty($def["FOOTER"]))) {
@@ -234,7 +235,7 @@ if ((isset($def["FOOTER_FONTCOLOR"])) && (!empty($def["FOOTER_FONTCOLOR"]))) {
 	echo "
 	.footer,
 	.footer a{
-		color: #f8f8f8;
+		color: #ffffff;
 	}\n";
 }
 echo "</style>\n";

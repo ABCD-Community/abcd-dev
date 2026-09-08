@@ -12,6 +12,8 @@
 ** 2025-09-12 rogercgui Unifies CSS files in a single Main.CSS file
 ** 2025-11-25 fho4abcd Reduce white space, especially in list/edit a record. Solution is not ideal.
 ** 2025-12-20 fho4abcd Add centered table+nowrap td+ reduced white space
+** 2026-08-25 rogercgui Merge topbar redesign (.heading/.heading-database/.heading-nav/.bt-mod) - see inline notes
+** 2026-09-07 rogercgui Removed duplicate legacy topbar/nav block (tag+class selectors like nav.heading-nav were beating the new rules by specificity, and the 3 separate/conflicting responsive breakpoints were fighting each other) - single consolidated block now lives at 5.1, see note there
 */
 
 /* ==========================================================================
@@ -317,7 +319,7 @@ a.menuButton {
     user-select: none;
     -webkit-user-select: none;
     touch-action: manipulation;
-    border-radius: 0.3rem;
+    border-radius: 1rem;
     display: block;
     float: left;
     height: 50px;
@@ -388,7 +390,7 @@ a.singleButton:hover {
     min-height: 65px;
     background-color: var(--abcd-white, #ffffff);
     border: 1px solid #cccccc;
-    border-radius: 4px;
+    border-radius: 1rem;
     margin: 5px 15px 15px 0;
     text-decoration: none !important;
     /* Anula sublinhado padrão do link */
@@ -765,95 +767,340 @@ div.tooltip-data label {
     display: table;
 }
 
-/* --- 4.2. Header (.heading) --- */
+/* ==========================================================================
+   4.2. Header (.heading)
+   ========================================================================== */
 .heading {
     display: flex;
-    background-color: var(--abcd-steel-blue);
-    height: 45px;
+    align-items: center;
+    background-color: var(--abcd-blue, #1f2937);
+    color: #ffffff;
+    height: 50px !important;
+    padding: 0 1rem;
+    gap: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     width: 100%;
+    box-sizing: border-box;
 }
 
 .institutionalInfo {
-    float: left;
-    padding: 2px 10px;
-    height: 40px;
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    height: 100%;
+    padding: 0 !important;
 }
 
 .institutionalInfo img {
-    margin: 2px 8px 0 0;
-    display: inline-block;
-    height: 32px;
+    max-height: 32px;
+    object-fit: contain;
 }
 
+/* Seletor de Base de Dados */
 .heading-database {
-    display: inline-block;
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    height: 100%;
 }
 
 .heading-database form {
-    margin-right: 15%;
-    padding: 0;
-    height: 45px;
-    position: absolute;
-    width: 39%;
-    vertical-align: middle;
-    text-align: right;
+    display: flex;
+    align-items: center;
+    height: 34px !important;
+    margin: 0 !important;
+    padding: 0 0 0 8px!important;
+    background: rgba(255, 255, 255, 0.15) !important;
+    border-radius: 4px;
+    transition: background 0.2s ease;
 }
 
-.heading-database form label {
-    display: inline-block;
-    vertical-align: middle;
-    margin: 12px 10px 0 30px;
-    font-size: 1rem;
+.heading-database form:hover {
+    background: rgba(255, 255, 255, 0.25) !important;
 }
 
-select.heading-database {
-    display: block;
-    margin-top: 5px;
-    background: var(--abcd-gray-200);
-    color: var(--abcd-steel-blue);
-    width: 60%;
-    border: none;
-    border-radius: inherit;
-    float: right;
-    padding: 8px;
-    height: 35px;
-    border-radius: 3px;
-    box-shadow: rgba(0, 0, 0, .1) inset 0 2px 4px 0;
-    font-weight: 600;
-    font-size: 14px;
-    text-align: left;
+select.heading-database,
+.heading-database select {
+    background-color: transparent !important;
+    color: #ffffff !important;
+    border: none !important;
+    box-shadow: none !important;
+    font-weight: 600 !important;
+    font-size: 0.9rem !important;
+    padding: 0 32px 0 12px !important;
+    height: 100% !important;
+    margin: 0 !important;
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white'%3E%3Cpath d='M7 10l5 5 5-5z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    background-size: 18px;
 }
 
-select.heading-database-att {
-    background: var(--abcd-yellow);
-    color: var(--abcd-red);
+select.heading-database:focus {
+    outline: 2px solid var(--abcd-yellow, #ffc107);
 }
 
 select.heading-database option {
-    background: var(--abcd-white);
-    color: var(--abcd-steel-blue);
+    background: var(--abcd-white, #ffffff);
+    color: var(--abcd-steel-blue, #333333);
 }
 
-.userInfo {
-    float: right;
-    text-align: right;
+/* ==========================================================================
+   5.1. Main header navigation (Priority+ Pattern)
+   ========================================================================== */
+.heading-nav,
+nav.heading-nav {
+    display: flex;
+    flex-grow: 1;
+    justify-content: space-between;
+    align-items: center;
+    height: 100%;
+    min-width: 0;
+}
+
+.nav-modules-wrapper {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    overflow: hidden;
+    /* Corta visualmente qualquer vazamento */
+    display: flex;
+    /* Essencial para o alinhamento à direita funcionar */
+}
+
+.nav-modules {
+    display: flex;
+    align-items: center;
+    list-style: none;
+    margin: 0 0 0 auto;
+    /* Empurra a lista para a direita (Substitui o flex-end de forma segura) */
+    padding: 0;
+    height: 100%;
+}
+
+.nav-utilities {
+    display: flex;
+    align-items: center;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    height: 100%;
+}
+
+.nav-module-item {
+    flex-shrink: 0;
+    /* IMPEDE esmagamento dos botões - crucial para a medição do JS */
+}
+
+/* Design unificado para botões no topo */
+.heading-nav button.bt-mod,
+.heading-nav a.bt-util {
+    background: transparent !important;
+    /* Força sobreposição de buttons.css */
+    border: none !important;
+    color: rgba(255, 255, 255, 0.75) !important;
+    height: 50px !important;
+    padding: 0 14px !important;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    transition: all 0.2s ease;
+    border-radius: 0 !important;
+    box-shadow: none !important;
     white-space: nowrap;
-    padding: 15px 15px 0px 0px;
 }
 
-.userInfo a.button_logout {
-    display: -moz-inline-box;
-    display: inline-block;
-    padding: 6px 32px 6px 0px;
-    vertical-align: middle;
+.heading-nav a.bt-util i, .heading-nav button.bt-mod i {
+    margin-right: 6px;
 }
 
-.language {
-    float: right;
-    width: 30%;
-    text-align: right;
-    white-space: nowrap;
-    padding: 0px 47px 0px 0px;
+.heading-nav button.bt-mod:hover,
+.heading-nav a.bt-util:hover {
+    color: #ffffff !important;
+    background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+.heading-nav button.bt-mod.active {
+    color: #ffffff !important;
+    background-color: rgba(255, 255, 255, 0.15) !important;
+    border-bottom: 3px solid var(--abcd-yellow, #ffc107) !important;
+}
+
+/* -----------------------------------------------------
+   DROPDOWN "MODS"
+   ----------------------------------------------------- */
+.dropdown-container {
+    position: relative;
+    height: 100%;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.mods-dropdown-menu {
+    display: none;
+    /* Ativado via JS */
+    position: absolute;
+    top: 50px;
+    right: 0;
+    background-color: #ffffff;
+    min-width: 220px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+    border-radius: 0 0 6px 6px;
+    border: 1px solid #d1d5db;
+    z-index: 9999;
+    list-style: none;
+    padding: 8px 0;
+    margin: 0;
+}
+
+.mods-dropdown-menu.show-dropdown {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Gira o chevron do botao "Mods" quando o dropdown esta aberto */
+.bt-mods-chevron {
+    transition: transform 0.2s ease;
+}
+
+.bt-mods-toggle.dropdown-open .bt-mods-chevron {
+    transform: rotate(180deg);
+}
+
+/* Reset de visualização para os botões que caírem dentro do dropdown */
+.mods-dropdown-menu .nav-module-item {
+    width: 100%;
+}
+
+.mods-dropdown-menu button.bt-mod {
+    width: 100%;
+    height: 44px !important;
+    padding: 0 16px !important;
+    color: #374151 !important;
+   background-color: var(--abcd-white, #ffffff) !important;
+    border-bottom: none !important;
+    justify-content: flex-start;
+    font-weight: 500;
+}
+
+.mods-dropdown-menu button.bt-mod:hover {
+    background-color: #f3f4f6 !important;
+    color: var(--abcd-blue, #0056b3) !important;
+}
+
+.mods-dropdown-menu button.bt-mod.active {
+    background-color: #e5edff !important;
+    color: var(--abcd-blue, #0056b3) !important;
+    border-left: 4px solid var(--abcd-blue, #0056b3) !important;
+    font-weight: 700;
+}
+
+.mods-dropdown-menu .mod-icon {
+    width: 20px;
+    text-align: center;
+    margin-right: 12px;
+    color: #6b7280;
+}
+
+.mods-dropdown-menu button.bt-mod.active .mod-icon {
+    color: inherit;
+}
+
+/* -----------------------------------------------------
+   Utilitários (Encoding e Perfil)
+   ----------------------------------------------------- */
+.charset-badge {
+    background: rgba(0, 0, 0, 0.25) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    color: #e2e8f0 !important;
+    font-family: monospace;
+    font-size: 0.75rem !important;
+    padding: 2px 8px !important;
+    height: 24px !important;
+    border-radius: 12px !important;
+    margin: auto 8px;
+}
+
+.user-badge {
+    background: rgba(255, 255, 255, 0.1) !important;
+    border-radius: 25px !important;
+    height: 34px !important;
+    padding: 0 14px 0 10px !important;
+    margin: 8px;
+}
+
+.user-badge i {
+    color: var(--abcd-yellow, #ffc107) !important;
+    font-size: 1.1rem;
+}
+
+/* Sobrescreve regras rígidas do buttons.css para Logout */
+.heading-nav a.bt-exit {
+    background-color: transparent !important;
+    color: rgba(255, 255, 255, 0.75) !important;
+    padding: 0 12px !important;
+}
+
+.heading-nav a.bt-exit:hover {
+    background-color: transparent !important;
+    color: var(--abcd-danger, #fc8181) !important;
+}
+
+/* -----------------------------------------------------
+   Breakpoint intermediario (tablets): esconde os rotulos
+   de texto dos modulos/utilitarios e mantem so os icones,
+   para ganhar espaco ANTES de o JS (Priority+) precisar
+   mover itens para o dropdown "Mods". Os rotulos continuam
+   visiveis dentro do proprio dropdown, onde espaco nao falta.
+   ----------------------------------------------------- */
+@media (max-width: 900px) {
+    .heading-nav .mod-title {
+        display: none !important;
+    }
+
+    .mods-dropdown-menu .mod-title {
+        display: inline !important;
+    }
+
+    .heading-nav button.bt-mod,
+    .heading-nav a.bt-util {
+        padding: 0 10px !important;
+    }
+}
+
+/* ==========================================================================
+   Fallback Responsivo Base
+   ========================================================================== */
+@media (max-width: 768px) {
+    .heading {
+        flex-wrap: wrap;
+        padding: 5px;
+        height: auto !important;
+    }
+
+    .institutionalInfo {
+        display: none;
+    }
+
+    .heading-database {
+        order: 3;
+        width: 100%;
+        padding: 5px 0;
+    }
+
+    .heading-database form {
+        width: 100%;
+    }
+
+    .heading-nav {
+        order: 2;
+        width: 100%;
+    }
 }
 
 /* --- 4.3. Section Information Bar (.sectionInfo) --- */
@@ -1021,169 +1268,22 @@ select.heading-database option {
    5. NAVIGATION
    ========================================================================== */
 
-/* --- 5.1. Main header navigation(nav.heading-nav) --- */
-nav.heading-nav ul {
-    float: right;
-    padding: 0;
-    margin: 0;
-    vertical-align: top;
-    list-style: none;
-    position: relative;
-    overflow: hidden;
-    height: 45px;
-}
-
-nav.heading-nav ul li {
-    display: inline-block;
-    vertical-align: top;
-    float: left;
-}
-
-nav.heading-nav a {
-    display: flex;
-    color: var(--abcd-white);
-    height: 45px;
-    line-height: 60px;
-    text-decoration: none;
-    border: none;
-    padding: 0 8px;
-    vertical-align: top;
-    box-shadow: none;
-    align-items: center;
-}
-
-nav.heading-nav a:hover,
-nav.heading-nav button:hover,
-nav.heading-nav select:hover {
-    background-color: var(--abcd-steel-blue);
-}
-
-nav.heading-nav a img {
-    margin-top: 0;
-    vertical-align: middle;
-}
-
-nav.heading-nav select {
-    text-transform: uppercase;
-    display: block;
-    color: var(--abcd-white);
-    height: 43px;
-    width: 60px;
-    text-decoration: none;
-    border: none;
-    padding: 8px;
-    vertical-align: middle;
-    box-shadow: none;
-    line-height: 60px;
-}
-
-nav.heading-nav select option {
-    padding: 5px;
-}
-
-.lang:active {
-    border: 1px solid #000;
-    pointer-events: initial;
-}
-
-/* ---Main navigation dropdowns --- */
-nav.heading-nav ul ul {
-    z-index: 999999999;
-    display: none;
-    position: absolute;
-    top: 45px;
-    right: 0;
-    left: 200px;
-    /* Adjust as needed */
-}
-
-nav.heading-nav ul li:hover>ul {
-    display: inherit;
-}
-
-nav.heading-nav ul ul li {
-    float: none;
-    display: list-item;
-    position: relative;
-    margin-left: -80px;
-    /* Adjust as needed */
-}
-
-nav.heading-nav ul ul ul li {
-    position: relative;
-    top: -60px;
-}
-
-/* --- Module buttons on the main navigation --- */
-.bt-mod {
-    margin: 4px 0 0 0;
-    height: 42px;
-    width: 42px;
-    border-radius: 0px;
-    box-sizing: border-box;
-    cursor: pointer;
-    outline: 0;
-    padding: 10px;
-    transform: translateY(0);
-    transition: transform 150ms, box-shadow 150ms;
-    user-select: none;
-    -webkit-user-select: none;
-    touch-action: manipulation;
-    background-repeat: no-repeat;
-    background-position: center;
-    border-top-right-radius: 0.3rem;
-    border-top-left-radius: 0.3rem;
-}
-
-.bt-cat {
-    background-image: url(../svg/ic_fluent_book_database_24_regular.svg);
-}
-
-.bt-cat.active {
-    box-shadow: rgba(0, 0, 0, .1) inset 0 2px 4px 0;
-    background-image: url(../svg/ic_fluent_book_database_24_filled.svg);
-}
-
-.bt-loan {
-    background-image: url(../svg/ic_fluent_people_swap_24_regular.svg);
-}
-
-.bt-loan.active {
-    background-image: url(../svg/ic_fluent_people_swap_24_filled.svg);
-}
-
-.bt-acq {
-    background-image: url(../svg/ic_fluent_cart_24_regular.svg);
-}
-
-.bt-acq.active {
-    background-image: url(../svg/ic_fluent_cart_24_filled.svg);
-}
-
-.bt-charset {
-    font-size: small;
-}
-
-nav.heading-nav a.bt-exit {
-    background-color: var(--abcd-danger);
-    border: none;
-    border-radius: 0;
-}
-
-li a.bt-exit:hover {
-    background-color: var(--abcd-danger);
-    border: none;
-}
-
+/* NOTA: a implementacao completa de .heading-nav / .bt-mod / .bt-util /
+   .charset-badge / .user-badge / .bt-exit / .dropdown-container /
+   .mods-dropdown-menu fica UNICAMENTE no bloco "5.1. Main header
+   navigation (Priority+ Pattern)" acima (secao 4.2, perto de .heading).
+   NAO redefina essas classes aqui de novo -- foi exatamente essa
+   duplicacao (um bloco antigo com seletores mais especificos como
+   "nav.heading-nav") que quebrou o layout em 2026-09. */
 
 /* --- 5.2. Generic navigation (Menu de Manutenção) --- */
-nav {
+nav:not(.heading-nav) {
     display: block;
     text-align: center;
     width: 100%;
 }
 
-nav ul {
+nav:not(.heading-nav) ul {
     margin: 0;
     padding: 0;
     list-style: none;
@@ -2321,7 +2421,7 @@ body:first-of-type .homepage .mainBox .boxContent .searchTitles .stInput input.t
 iframe.dataentry-header {
     z-index: 999999999;
     position: relative;
-    height: 45px;
+    height: 50px;
     width: 100%;
     border: none;
 }
@@ -3200,6 +3300,7 @@ div.ABCD_menu:hover {
     .abcd-auto {
         max-width: 100%;
     }
+
 }
 
 /* ==========================================================================
@@ -4023,4 +4124,84 @@ div.ABCD_menu:hover {
     width: 16px;
     height: 16px;
     accent-color: #005aa9;
+}
+
+
+/* -----------------------------------------------------
+   DROPDOWN DO USUÁRIO (Perfil)
+   ----------------------------------------------------- */
+.user-dropdown-menu {
+    display: none;
+    position: absolute;
+    top: 50px;
+    right: 0;
+    background-color: #ffffff;
+    min-width: 200px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+    border-radius: 0 0 6px 6px;
+    border: 1px solid #d1d5db;
+    z-index: 9999;
+    list-style: none;
+    padding: 8px 0;
+    margin: 0;
+}
+
+.user-dropdown-menu.show-dropdown {
+    display: flex;
+    flex-direction: column;
+}
+
+.user-dropdown-menu a.bt-dropdown-item{
+    padding: 10px 20px;
+    cursor: pointer;
+    transition: background-color 0.15s, color 0.15s;
+    background-color: var(--abcd-white) !important;
+    color: #374151 !important;
+    border-radius: 0%;
+}
+
+.bt-user-chevron {
+    transition: transform 0.2s ease;
+}
+
+.bt-user-toggle.dropdown-open .bt-user-chevron {
+    transform: rotate(180deg);
+}
+
+/* Classe reaproveitável para itens (<a> ou <button>) dentro dos dropdowns */
+.bt-dropdown-item {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 10px 16px;
+    background: transparent;
+    border: none;
+    text-align: left;
+    color: #374151;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: background 0.15s ease;
+    text-decoration: none;
+    box-sizing: border-box;
+}
+
+.bt-dropdown-item:hover {
+    background-color: #f3f4f6;
+    color: var(--abcd-blue, #0056b3);
+}
+
+.dropdown-icon {
+    width: 20px;
+    text-align: center;
+    margin-right: 12px;
+    color: #6b7280;
+}
+
+.user-dropdown-menu .dropdown-divider {
+    height: 1px;
+    margin: 4px 0;
+    background-color: #e5e7eb;
+    border-top: solid 1px #c2c2c2;
 }

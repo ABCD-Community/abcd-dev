@@ -63,6 +63,4 @@ else
 <script>
 top.menu.location.href="menu_main.php?base="+top.base+"<?php echo $inicio?>"
 </script>
-</body>
-</html>
 
