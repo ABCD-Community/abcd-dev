@@ -1,124 +1,290 @@
 <?php
 /*
- * Script: Topbar General Navigation to Central
+ * Script: nav_general_topbar.php
  * Author: Roger Craveiro Guilherme
  * Description: This script generates the top navigation bar for the ABCD Central interface, displaying buttons for Cataloging, Circulation, Acquisitions, OPAC access, and user information based on permissions and configurations.
  * Date: 2026-03-05
  * 
+ * changelog:
+ * 2026-03-05 fho4abcd: Initial creation of the topbar navigation
+ * 20260906 rogercgui - Added support for user dropdown with profile and logout options
+ * 20260907 rogercgui - Added Priority+ overflow handling for module buttons
  */
+
+
+    global $arrHttp, $def, $msgstr, $db_path, $charset, $meta_encoding, $name, $profile, $login, $verify_selbase, $module_odds, $link_logo;
+
+$sys_charset = !empty($charset) ? $charset : (!empty($meta_encoding) ? $meta_encoding : 'UTF-8');
+
+$central = false;
+$circulation = false;
+$acquisitions = false;
+if (isset($_SESSION["permiso"])) {
+    foreach ($_SESSION["permiso"] as $key => $value) {
+        $p = explode("_", $key);
+        if ((isset($p[1]) && $p[1] === "CENTRAL") || str_starts_with($key, "CENTRAL_") || str_starts_with($key, "ADM_")) $central = true;
+        if (str_starts_with($key, "CIRC_")) $circulation = true;
+        if (str_starts_with($key, "ACQ_")) $acquisitions = true;
+    }
+}
+
+$current_base = $arrHttp["base"] ?? $_REQUEST["base"] ?? "";
+$active_mod   = $_SESSION["MODULO"] ?? "";
+$current_lang = $_SESSION["lang"] ?? $_REQUEST["lang"] ?? "en";
+
+$module_registry = [
+    'cat' => [
+        'title'  => $msgstr["catalogacion"] ?? 'Cataloging',
+        'icon'   => 'fas fa-book',
+        'action' => '/central/common/inicio.php',
+        'params' => ['base' => $current_base, 'modulo' => 'catalog', 'lang' => $current_lang],
+        'perm'   => $central,
+        'active' => ($active_mod === "catalog" || $active_mod === "adm")
+    ],
+    'circ' => [
+        'title'  => $msgstr["prestamo"] ?? 'Circulation',
+        'icon'   => 'fas fa-exchange-alt',
+        'action' => '/central/common/inicio.php',
+        'params' => ['base' => $current_base, 'modulo' => 'loan', 'lang' => $current_lang],
+        'perm'   => ($circulation && ($def["SHOW_CIRCULATION"] ?? "Y") === "Y"),
+        'active' => ($active_mod === "loan")
+    ],
+    'acq' => [
+        'title'  => $msgstr["acquisitions"] ?? 'Acquisitions',
+        'icon'   => 'fas fa-shopping-cart',
+        'action' => '/central/common/inicio.php',
+        'params' => ['base' => $current_base, 'modulo' => 'acquisitions', 'lang' => $current_lang],
+        'perm'   => ($acquisitions && ($def["SHOW_ACQUISITION"] ?? "Y") === "Y"),
+        'active' => ($active_mod === "acquisitions")
+    ]
+];
+
+if (function_exists('abcd_run_hook')) {
+    $hook_result = abcd_run_hook('abcd_topbar_modules', $module_registry);
+    if (is_array($hook_result)) {
+        $module_registry = $hook_result;
+    }
+}
+
+$nav_mods_str = $def['NAV_MODS'] ?? 'cat, circ, acq';
+$nav_order = array_map('trim', explode(',', $nav_mods_str));
+
+foreach (array_keys($module_registry) as $registered_slug) {
+    if (!in_array($registered_slug, $nav_order)) {
+        $nav_order[] = $registered_slug;
+    }
+}
 ?>
 
+<nav class="heading-nav" id="heading-nav">
+    <!-- 1. CONTAINER DOS MÓDULOS (Flexível) -->
+    <div class="nav-modules-wrapper" id="nav-modules-wrapper">
+        <ul class="nav-modules" id="nav-modules-list">
+            <?php
+            foreach ($nav_order as $slug) {
+                if (isset($module_registry[$slug]) && $module_registry[$slug]['perm']) {
+                    $mod = $module_registry[$slug];
+                    $active_class = $mod['active'] ? 'active' : '';
+            ?>
+                    <li class="nav-module-item">
+                        <form action="<?php echo htmlspecialchars($mod['action'], ENT_QUOTES, $sys_charset) ?>" method="post" target="_top" class="nav-module-form">
+                            <?php foreach ($mod['params'] as $p_key => $p_val): ?>
+                                <input type="hidden" name="<?php echo htmlspecialchars((string)$p_key, ENT_QUOTES, $sys_charset) ?>" value="<?php echo htmlspecialchars((string)$p_val, ENT_QUOTES, $sys_charset) ?>">
+                            <?php endforeach; ?>
+                            <button class="bt-mod <?php echo $active_class ?>" type="submit" title="<?php echo htmlspecialchars((string)$mod['title'], ENT_QUOTES, $sys_charset) ?>">
+                                <i class="<?php echo htmlspecialchars($mod['icon'], ENT_QUOTES, $sys_charset) ?> mod-icon"></i>
+                                <span class="mod-title"><?php echo htmlspecialchars((string)$mod['title'], ENT_QUOTES, $sys_charset) ?></span>
+                            </button>
+                        </form>
+                    </li>
+            <?php
+                }
+            }
+            ?>
+        </ul>
+    </div>
 
-<nav class="heading-nav">
-    <ul>
+    <!-- 2. BOTÃO "MODS" E DROPDOWN (Overflow) -->
+    <div class="dropdown-container" id="nav-mods-dropdown" style="visibility: hidden; width: 0;">
+        <button class="bt-mod bt-mods-toggle" id="bt-mods-toggle" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="mods-dropdown-list">
+            <i class="fas fa-th"></i>
+            <span class="mod-title" style="margin-left: 6px;">Mods</span>
+            <i class="fas fa-chevron-down bt-mods-chevron" style="font-size: 0.7em; margin-left: 6px;"></i>
+        </button>
+        <ul class="mods-dropdown-menu" id="mods-dropdown-list" role="menu" aria-label="Mods">
+            <!-- Itens excedentes serão movidos para cá pelo JS -->
+        </ul>
+    </div>
+
+    <!-- 3. UTILITÁRIOS (Fixos à direita) -->
+    <ul class="nav-utilities">
         <?php
-        // Ensures access to global settings
-        global $arrHttp, $def, $msgstr, $db_path;
-
-        $central = "";
-        $circulation = "";
-        $acquisitions = "";
-        $style_cat = "";
-        $style_loan = "";
-        $style_acq = "";
-
-        $show_circ_btn = isset($def["SHOW_CIRCULATION"]) ? $def["SHOW_CIRCULATION"] : "Y";
-        $show_acq_btn  = isset($def["SHOW_ACQUISITION"]) ? $def["SHOW_ACQUISITION"] : "Y";
-        $show_opac_btn = isset($def["SHOW_OPAC_BUTTON"]) ? $def["SHOW_OPAC_BUTTON"] : "Y";
-        $show_charset  = isset($def["SHOW_CHARSET"]) ? $def["SHOW_CHARSET"] : "Y";
-
-        $current_base = "";
-        if (isset($arrHttp["base"])) $current_base = $arrHttp["base"];
-        elseif (isset($_REQUEST["base"])) $current_base = $_REQUEST["base"];
-
-        if (isset($_SESSION["permiso"])) {
-            foreach ($_SESSION["permiso"] as $key => $value) {
-                $p = explode("_", $key);
-                if (isset($p[1]) and $p[1] == "CENTRAL") $central = "Y";
-                if (substr($key, 0, 8) == "CENTRAL_")  $central = "Y";
-                if (substr($key, 0, 5) == "CIRC_")  $circulation = "Y";
-                if (substr($key, 0, 4) == "ACQ_")  $acquisitions = "Y";
-            }
+        $show_opac_btn = $def["SHOW_OPAC_BUTTON"] ?? "Y";
+        if (($central || $circulation || $acquisitions || (isset($verify_selbase) && $verify_selbase === "Y") || isset($module_odds)) && $show_opac_btn === "Y" && isset($link_logo)) {
+            echo '<li><a href="' . htmlspecialchars($link_logo, ENT_QUOTES, $sys_charset) . '" target="_blank" class="bt-util" title="OPAC"><i class="fas fa-globe-americas"></i> <span class="mod-title" style="margin-left: 6px;">OPAC</span></a></li>';
         }
-
-        if ($circulation == "Y" or $acquisitions == "Y" or $central == "Y") {
-
-            // --- CATALOGING (Always visible if you have central permission) ---
-            if ($central == "Y") {
-                if (isset($_SESSION["MODULO"]) && $_SESSION["MODULO"] == "catalog") $style_cat = "active";
+        if (($def["SHOW_CHARSET"] ?? "Y") === "Y") {
+            echo '<li><span class="bt-util charset-badge" title="' . htmlspecialchars($msgstr["page_encoding"] ?? 'Encoding', ENT_QUOTES, $sys_charset) . '">' . htmlspecialchars($sys_charset, ENT_QUOTES, $sys_charset) . '</span></li>';
+        }
         ?>
+        <li class="dropdown-container" id="user-dropdown-container">
+            <button class="bt-util user-badge bt-user-toggle" id="bt-user-toggle" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="user-dropdown-list" title="<?php echo htmlspecialchars(($name ?? '') . ' (' . ($profile ?? '') . ')', ENT_QUOTES, $sys_charset); ?>">
+                <i class="fas fa-user-circle"></i>
+                <span class="mod-title" style="margin-left: 6px;"><?php echo htmlspecialchars($login ?? '', ENT_QUOTES, $sys_charset); ?></span>
+                <i class="fas fa-chevron-down bt-user-chevron" style="font-size: 0.7em; margin-left: 6px;"></i>
+            </button>
+            <ul class="user-dropdown-menu" id="user-dropdown-list" role="menu" aria-label="User Options">
                 <li>
-                    <form action="/central/common/inicio.php" method="post" accept-charset=utf-8 target="_top">
-                        <input type="hidden" name="base" value="<?php echo $current_base; ?>">
-                        <button class="bt-mod bt-cat <?php echo $style_cat; ?>" type="submit" name=modulo value="catalog" title="<?php echo $msgstr["modulo"] . " " . $msgstr["catalogacion"]; ?>"></button>
-                    </form>
-                </li>
-            <?php
-            }
-
-            // --- CIRCULAÇÃO (Condicional: Permissão + abcd.def) ---
-            if ($circulation == "Y" && $show_circ_btn == "Y") {
-                if (isset($_SESSION["MODULO"]) && $_SESSION["MODULO"] == "loan") $style_loan = "active";
-            ?>
-                <li>
-                    <form action="/central/common/inicio.php" method="post" accept-charset=utf-8 target="_top">
-                        <input type="hidden" name="base" value="<?php echo $current_base; ?>">
-                        <button class="bt-mod bt-loan <?php echo $style_loan; ?>" type="submit" name=modulo value="loan" title="<?php echo $msgstr["modulo"] . " " . $msgstr["prestamo"]; ?>"></button>
-                    </form>
-                </li>
-            <?php
-            }
-
-            // --- ACQUISITION (Conditional: Permission + abcd.def) ---
-            if ($acquisitions == "Y" && $show_acq_btn == "Y") {
-                if (isset($_SESSION["MODULO"]) && $_SESSION["MODULO"] == "acquisitions") $style_acq = "active";
-            ?>
-                <li>
-                    <form action="/central/common/inicio.php" method="post" accept-charset=utf-8 target="_top">
-                        <input type="hidden" name="base" value="<?php echo $current_base; ?>">
-                        <button class="bt-mod bt-acq <?php echo $style_acq; ?>" type="submit" name=modulo value="acquisitions" title="<?php echo $msgstr["modulo"] . " " . $msgstr["acquisitions"]; ?>"></button>
-                    </form>
-                </li>
-            <?php
-            }
-        }
-
-        // --- OPAC BUTTON (Conditional: abcd.def + existing link) ---
-        global $verify_selbase, $module_odds;
-        if (($central == "Y") or ($circulation == "Y") or ($acquisitions == "Y") or (isset($verify_selbase) && $verify_selbase == "Y") or isset($module_odds)) {
-
-            if ($show_opac_btn == "Y" && isset($link_logo)) {
-            ?>
-                <li>
-                    <a href="<?php echo $link_logo; ?>" target="_blank" class="bt-mod" title="OPAC">
-                        <i class="fas fa-globe-americas fa-2x" style="color:white; font-size:1.5em;"></i>
+                    <a href="#" style="text-decoration: none;" class="bt-dropdown-item"><i class="fas fa-user dropdown-icon"></i>
+                        <?php echo htmlspecialchars($name ?? '', ENT_QUOTES, $sys_charset); ?>
+                        <small> (<?php echo htmlspecialchars($profile ?? '', ENT_QUOTES, $sys_charset); ?>)</small>
                     </a>
                 </li>
-            <?php
+                <li><a href="/central/common/change_password.php" class="bt-dropdown-item"><i class="fas fa-key dropdown-icon"></i> Mudar Senha</a></li>
+                <li class="dropdown-divider"></li>
+                <a href="/central/common/logout.php" class="bt-dropdown-item" title="<?php echo htmlspecialchars($msgstr["logout"] ?? 'Logout', ENT_QUOTES, $sys_charset); ?>">
+                    <i class="fas fa-sign-out-alt"></i> <?php echo htmlspecialchars($msgstr["logout"] ?? 'Logout', ENT_QUOTES, $sys_charset); ?>
+                </a>
+        </li>
+    </ul>
+    </li>
+    <?php if (!isset($module_odds)): ?>
+
+    <?php endif; ?>
+    </ul>
+</nav>
+
+<!-- NOVO SCRIPT COMPLETO NO FINAL DO ARQUIVO -->
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const wrapper = document.getElementById("nav-modules-wrapper");
+        const primaryList = document.getElementById("nav-modules-list");
+        const overflowList = document.getElementById("mods-dropdown-list");
+        const modsDropdown = document.getElementById("nav-mods-dropdown");
+        const toggleBtn = document.getElementById("bt-mods-toggle");
+
+        // Elementos do Dropdown de Usuário
+        const userToggleBtn = document.getElementById("bt-user-toggle");
+        const userDropdownList = document.getElementById("user-dropdown-list");
+        const userDropdownContainer = document.getElementById("user-dropdown-container");
+
+        // ------------------------------------------------------------------
+        // Esta topbar normalmente roda DENTRO de um <iframe> (ex.: o iframe
+        // "header" de inicio_main.php). Um iframe recorta seu conteúdo na
+        // altura da própria caixa: nenhum z-index resolve isso, porque não é
+        // uma disputa de empilhamento, é o limite físico do iframe. Como o
+        // iframe é same-origin, aumentamos a altura do PRÓPRIO <iframe> (via
+        // window.frameElement, visto do lado de fora) só enquanto o dropdown
+        // está aberto, e devolvemos ao normal ao fechar. Zero mudanças em
+        // inicio_main.php; se a página não estiver dentro de um iframe (ou
+        // for cross-origin), window.frameElement é null/inacessível e a
+        // função simplesmente não faz nada.
+        function syncHostIframeForDropdown(openMenuEl) {
+            if (!window.frameElement) return;
+            try {
+                if (openMenuEl) {
+                    const neededHeight = Math.ceil(openMenuEl.getBoundingClientRect().bottom) + 8;
+                    window.frameElement.style.position = 'absolute';
+                    window.frameElement.style.top = '0';
+                    window.frameElement.style.left = '0';
+                    window.frameElement.style.height = neededHeight + 'px';
+                } else {
+                    window.frameElement.style.position = '';
+                    window.frameElement.style.top = '';
+                    window.frameElement.style.left = '';
+                    window.frameElement.style.height = '';
+                }
+            } catch (e) {
+                // iframe cross-origin ou outra restrição do navegador - ignora
             }
         }
 
-        // --- CHARSET (Conditional: abcd.def) ---
-        if ($show_charset == "Y") {
-            ?>
-            <li>
-                <a class="bt-charset" title='<?php echo $msgstr["page_encoding"]; ?>' href="#">
-                    <?php echo isset($charset) ? $charset : (isset($meta_encoding) ? $meta_encoding : ''); ?>
-                </a>
-            </li>
-        <?php } ?>
+        // Abre/fecha dropdown do Mods
+        function setModsDropdownOpen(isOpen) {
+            if (isOpen) setUserDropdownOpen(false); // Fecha o do usuário se abrir o Mods
+            overflowList.classList.toggle('show-dropdown', isOpen);
+            toggleBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+            toggleBtn.classList.toggle('dropdown-open', isOpen);
+            syncHostIframeForDropdown(isOpen ? overflowList : null);
+        }
 
-        <li>
-            <a class="bt-charset" href="#" title="<?php echo (isset($name) ? $name : '') . ' (' . (isset($profile) ? $profile : '') . ')'; ?>">
-                <i class="fas fa-user"></i>&nbsp;<?php echo isset($login) ? $login : ''; ?>
-            </a>
-        </li>
+        // Abre/fecha dropdown do Usuário
+        function setUserDropdownOpen(isOpen) {
+            if (isOpen) setModsDropdownOpen(false); // Fecha o Mods se abrir o usuário
+            userDropdownList.classList.toggle('show-dropdown', isOpen);
+            userToggleBtn.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+            userToggleBtn.classList.toggle('dropdown-open', isOpen);
+            syncHostIframeForDropdown(isOpen ? userDropdownList : null);
+        }
 
-        <li>
-            <?php if (!isset($module_odds)) { ?>
-                <a class="bt-exit" href="/central/common/logout.php" title='<?php echo $msgstr["logout"]; ?>'>
-                    <img src="/assets/svg/ic_fluent_sign_out_24_regular.svg"></a>
-            <?php } ?>
-        </li>
-    </ul>
-</nav>
+        // Listeners de Clique
+        toggleBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            setModsDropdownOpen(!overflowList.classList.contains('show-dropdown'));
+        });
+
+        userToggleBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            setUserDropdownOpen(!userDropdownList.classList.contains('show-dropdown'));
+        });
+
+        // Fecha os dropdowns ao clicar fora
+        document.addEventListener('click', function(e) {
+            if (!modsDropdown.contains(e.target)) setModsDropdownOpen(false);
+            if (!userDropdownContainer.contains(e.target)) setUserDropdownOpen(false);
+        });
+
+        // Fecha com Esc
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                if (overflowList.classList.contains('show-dropdown')) {
+                    setModsDropdownOpen(false);
+                    toggleBtn.focus();
+                }
+                if (userDropdownList.classList.contains('show-dropdown')) {
+                    setUserDropdownOpen(false);
+                    userToggleBtn.focus();
+                }
+            }
+        });
+
+        // Lógica Matemática do Priority+
+        function adjustNav() {
+            if (!wrapper || !primaryList || !overflowList || !modsDropdown) return;
+
+            while (overflowList.firstElementChild) {
+                primaryList.appendChild(overflowList.firstElementChild);
+            }
+
+            modsDropdown.style.visibility = 'hidden';
+            modsDropdown.style.width = '0';
+            setModsDropdownOpen(false);
+
+            const getChildrenWidth = () => {
+                let total = 0;
+                for (let i = 0; i < primaryList.children.length; i++) {
+                    total += primaryList.children[i].offsetWidth;
+                }
+                return total;
+            };
+
+            if (getChildrenWidth() > wrapper.clientWidth) {
+                modsDropdown.style.visibility = 'visible';
+                modsDropdown.style.width = 'auto';
+
+                while (getChildrenWidth() > wrapper.clientWidth && primaryList.children.length > 0) {
+                    overflowList.insertBefore(primaryList.lastElementChild, overflowList.firstElementChild);
+                }
+            }
+        }
+
+        if (window.ResizeObserver) {
+            const observer = new ResizeObserver(adjustNav);
+            observer.observe(wrapper);
+        } else {
+            window.addEventListener('resize', adjustNav);
+        }
+
+        setTimeout(adjustNav, 50);
+    });
+</script>

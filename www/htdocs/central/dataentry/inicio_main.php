@@ -852,8 +852,6 @@ include "../common/header.php";
 				if (actualHeight > 20) window.savedMenuHeight = actualHeight;
 			} catch (e) {}
 
-			// --- ZERANDO O ESPAÇO EM BRANCO ---
-			// Usamos display: none para remover completamente a barra cinza
 			if (shouldCollapse) {
 				iframeMenu.style.display = 'none';
 				iframeHeader.style.display = 'none';

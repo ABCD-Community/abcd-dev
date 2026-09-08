@@ -175,7 +175,6 @@ include("$app_path/lang/lang.php");
 
 			?>
 		</div>
-		<div class="userInfo" style="margin-left: 80%;"><?php echo $meta_encoding ?></div>
 
 		<div class="spacer">&#160;</div>
 	</header>
