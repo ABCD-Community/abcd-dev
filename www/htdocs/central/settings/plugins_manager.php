@@ -185,7 +185,7 @@ include("../common/header.php");
                                                 <i class="fas fa-pause"></i> <?php echo $msgstr['plugin_deactivate'] ?? 'Deactivate'; ?>
                                             </button>
                                         <?php else: ?>
-                                            <button type="submit" name="action" value="activate" class="bt bt-blue" style="color: green;">
+                                            <button type="submit" name="action" value="activate" class="bt bt-blue">
                                                 <i class="fas fa-play"></i> <?php echo $msgstr['plugin_activate'] ?? 'Activate'; ?>
                                             </button>
                                         <?php endif; ?>
@@ -194,7 +194,7 @@ include("../common/header.php");
                                     <?php if (!$isActive): ?>
                                         <form method="POST" style="display:inline;" onsubmit="return confirm('<?php echo addslashes($msgstr['plugin_confirm_delete'] ?? 'WARNING: This will completely delete the plugin files. Proceed?'); ?>');">
                                             <input type="hidden" name="plugin_slug" value="<?php echo $slug; ?>">
-                                            <button type="submit" name="action" value="delete" class="bt bt-red" style="color: red; margin-left: 5px;">
+                                            <button type="submit" name="action" value="delete" class="bt bt-red" style=" margin-left: 5px;">
                                                 <i class="fas fa-trash"></i> <?php echo $msgstr['plugin_delete'] ?? 'Delete'; ?>
                                             </button>
                                         </form>
