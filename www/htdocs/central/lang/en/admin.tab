@@ -196,6 +196,7 @@ login=Login
 login_capt=Enter the characters to prove you are human
 login_invcapt=Invalid captcha (Please enter correct letters now)
 login_nocapt=Please enter the string to prove you are human
+change_password=Change Password
 logout=Logout
 ltitles=List titles
 m_addcopies=Add copies

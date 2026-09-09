@@ -7,7 +7,6 @@
  * Date: 2026-09-07
  */
 
-
 session_start();
 require_once("get_post.php");
 
@@ -26,6 +25,9 @@ if (isset($_SESSION["lang"])) {
 }
 include("../lang/admin.php");
 include("../lang/lang.php");
+
+// Set dynamic charset to prevent encoding mismatch (ISO-8859-1 vs UTF-8)
+$sys_charset = !empty($meta_encoding) ? $meta_encoding : 'UTF-8';
 
 // 3. Access Control: Verify active session (Do not call VerificarUsuario() here)
 if (!isset($_SESSION["login"]) || empty($_SESSION["login"])) {
@@ -78,15 +80,13 @@ if (isset($arrHttp['Opcion']) && $arrHttp['Opcion'] === 'chgpsw') {
 
 $css_name = (isset($css_name)) ? $css_name . "/" : "";
 
-
 include("header.php");
 include("institutional_info.php");
 ?>
 
-
 <div class="sectionInfo">
     <div class="breadcrumb">
-        <?php echo htmlspecialchars($msgstr["chgpass"], ENT_QUOTES, 'UTF-8'); ?>
+        <?php echo htmlspecialchars($msgstr["chgpass"] ?? 'Change Password', ENT_QUOTES, $sys_charset); ?>
     </div>
     <div class="actions"></div>
     <div class="spacer">&#160;</div>
@@ -94,72 +94,73 @@ include("institutional_info.php");
 
 <!-- Main Content Area -->
 <div class="middle login">
-    <!-- Reutilizando o container nativo de login (main.css 8.2) -->
+    <!-- Reutilizando o container nativo de login -->
     <div class="loginForm">
         <div class="boxContent">
 
             <h3 class="mb-3 color-gray-800" style="border-bottom: 1px solid #eee; padding-bottom: 10px;">
                 <i class="fas fa-shield-alt color-blue"></i>
-                <?php echo htmlspecialchars($msgstr["chgpass"], ENT_QUOTES, 'UTF-8'); ?>
+                <?php echo htmlspecialchars($msgstr["chgpass"] ?? 'Change Password', ENT_QUOTES, $sys_charset); ?>
             </h3>
 
             <?php if (!empty($error_message)): ?>
                 <!-- Reutilizando a classe .alert nativa do ABCD -->
                 <div class="alert mb-3">
-                    <?php echo htmlspecialchars($error_message, ENT_QUOTES, 'UTF-8'); ?>
+                    <?php echo htmlspecialchars($error_message, ENT_QUOTES, $sys_charset); ?>
                 </div>
             <?php endif; ?>
 
             <form name="administra" id="frmChangePassword" action="change_password.php" method="POST" onsubmit="return validateFrontend();">
                 <input type="hidden" name="Opcion" value="chgpsw">
-                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrf_token, ENT_QUOTES, 'UTF-8'); ?>">
-                <input type="hidden" name="login" value="<?php echo htmlspecialchars($arrHttp["login"] ?? $_SESSION["login"], ENT_QUOTES, 'UTF-8'); ?>">
+                <input type="hidden" name="csrf_token" value="<?php echo htmlspecialchars($csrf_token, ENT_QUOTES, $sys_charset); ?>">
+                <input type="hidden" name="login" value="<?php echo htmlspecialchars($arrHttp["login"] ?? $_SESSION["login"], ENT_QUOTES, $sys_charset); ?>">
 
-                <p><?php echo htmlspecialchars($name ?? '', ENT_QUOTES, $sys_charset); ?>
-                <small> (<?php echo htmlspecialchars($profile ?? '', ENT_QUOTES, $sys_charset); ?>)</small>
+                <p>
+                    <?php echo htmlspecialchars($name ?? $_SESSION["nombre"] ?? '', ENT_QUOTES, $sys_charset); ?>
+                    <small>(<?php echo htmlspecialchars($profile ?? $_SESSION["profile"] ?? '', ENT_QUOTES, $sys_charset); ?>)</small>
                 </p>
 
-                <!-- formRow e textEntry dentro do loginForm forçam o layout 100% (main.css) -->
+                <!-- formRow e textEntry dentro do loginForm forçam o layout 100% -->
                 <div class="formRow mb-3">
                     <label for="current_pwd" class="color-gray-700 font-weight-bold">
-                        <?php echo htmlspecialchars($msgstr["actualpass"], ENT_QUOTES, 'UTF-8'); ?>
+                        <?php echo htmlspecialchars($msgstr["actualpass"] ?? 'Current Password', ENT_QUOTES, $sys_charset); ?>
                     </label>
                     <div style="position: relative;">
                         <input type="password" name="password" id="current_pwd" class="textEntry" required autocomplete="current-password" style="padding-right: 35px;">
-                        <i class="far fa-eye" onclick="toggleVisibility('current_pwd', this)" style="position: absolute; right: 10px; top: 70%; transform: translateY(-50%); cursor: pointer; color: var(--abcd-gray-600);" title="<?php echo htmlspecialchars($msgstr["ver"], ENT_QUOTES, 'UTF-8'); ?>"></i>
+                        <i class="far fa-eye" onclick="toggleVisibility('current_pwd', this)" style="position: absolute; right: 10px; top: 70%; transform: translateY(-50%); cursor: pointer; color: var(--abcd-gray-600);" title="<?php echo htmlspecialchars($msgstr["ver"] ?? 'Show', ENT_QUOTES, $sys_charset); ?>"></i>
                     </div>
                 </div>
 
                 <div class="formRow mb-3">
                     <label for="new_pwd" class="color-gray-700 font-weight-bold">
-                        <?php echo htmlspecialchars($msgstr["newpass"], ENT_QUOTES, 'UTF-8'); ?>
+                        <?php echo htmlspecialchars($msgstr["newpass"] ?? 'New Password', ENT_QUOTES, $sys_charset); ?>
                     </label>
                     <div style="position: relative;">
                         <input type="password" name="new_password" id="new_pwd" class="textEntry" required autocomplete="new-password" style="padding-right: 35px;">
-                        <i class="far fa-eye" onclick="toggleVisibility('new_pwd', this)" style="position: absolute; right: 10px; top: 70%; transform: translateY(-50%); cursor: pointer; color: var(--abcd-gray-600);" title="<?php echo htmlspecialchars($msgstr["ver"], ENT_QUOTES, 'UTF-8'); ?>"></i>
+                        <i class="far fa-eye" onclick="toggleVisibility('new_pwd', this)" style="position: absolute; right: 10px; top: 70%; transform: translateY(-50%); cursor: pointer; color: var(--abcd-gray-600);" title="<?php echo htmlspecialchars($msgstr["ver"] ?? 'Show', ENT_QUOTES, $sys_charset); ?>"></i>
                     </div>
                     <span class="color-gray-500" style="font-size: 0.85em; display: block; margin-top: 5px;">
-                        <?php echo htmlspecialchars($msgstr["pwd_policy_help"] ?? "Allowed: letters, numbers, basic symbols. No spaces.", ENT_QUOTES, 'UTF-8'); ?>
+                        <?php echo htmlspecialchars($msgstr["pwd_policy_help"] ?? "Allowed: letters, numbers, basic symbols. No spaces.", ENT_QUOTES, $sys_charset); ?>
                     </span>
                 </div>
 
                 <div class="formRow mb-4">
                     <label for="confirm_pwd" class="color-gray-700 font-weight-bold">
-                        <?php echo htmlspecialchars($msgstr["confirmpass"], ENT_QUOTES, 'UTF-8'); ?>
+                        <?php echo htmlspecialchars($msgstr["confirmpass"] ?? 'Confirm Password', ENT_QUOTES, $sys_charset); ?>
                     </label>
                     <div style="position: relative;">
                         <input type="password" name="confirm_password" id="confirm_pwd" class="textEntry" required autocomplete="new-password" style="padding-right: 35px;">
-                        <i class="far fa-eye" onclick="toggleVisibility('confirm_pwd', this)" style="position: absolute; right: 10px; top: 70%; transform: translateY(-50%); cursor: pointer; color: var(--abcd-gray-600);" title="<?php echo htmlspecialchars($msgstr["ver"], ENT_QUOTES, 'UTF-8'); ?>"></i>
+                        <i class="far fa-eye" onclick="toggleVisibility('confirm_pwd', this)" style="position: absolute; right: 10px; top: 70%; transform: translateY(-50%); cursor: pointer; color: var(--abcd-gray-600);" title="<?php echo htmlspecialchars($msgstr["ver"] ?? 'Show', ENT_QUOTES, $sys_charset); ?>"></i>
                     </div>
                 </div>
 
                 <div class="formRow mt-4" style="text-align: right;">
                     <a class="bt bt-light color-white p-2" href="javascript:history.back()">
-                        <i class="fas fa-times"></i> <?php echo htmlspecialchars($msgstr["cancelar"], ENT_QUOTES, 'UTF-8'); ?>
+                        <i class="fas fa-times"></i> <?php echo htmlspecialchars($msgstr["cancelar"] ?? 'Cancel', ENT_QUOTES, $sys_charset); ?>
                     </a>
 
                     <button type="submit" class="bt bt-blue color-white p-2">
-                        <i class="fas fa-save"></i> <?php echo htmlspecialchars($msgstr["chgpass"], ENT_QUOTES, 'UTF-8'); ?>
+                        <i class="fas fa-save"></i> <?php echo htmlspecialchars($msgstr["chgpass"] ?? 'Change', ENT_QUOTES, $sys_charset); ?>
                     </button>
                 </div>
 
@@ -187,13 +188,13 @@ include("institutional_info.php");
         var confPwd = Trim(document.getElementById('confirm_pwd').value);
 
         if (newPwd !== confPwd) {
-            alert("<?php echo addslashes($msgstr["passconfirm"]); ?>");
+            alert("<?php echo addslashes($msgstr["passconfirm"] ?? 'Passwords do not match'); ?>");
             return false;
         }
 
         var allowedChars = /^[0-9a-zA-Z\.,!@#$%^&*?_~\\\-()]+$/;
         if (!allowedChars.test(newPwd)) {
-            alert("<?php echo addslashes($msgstr["validpwdchars"]); ?>");
+            alert("<?php echo addslashes($msgstr["validpwdchars"] ?? 'Invalid characters'); ?>");
             return false;
         }
         return true;
