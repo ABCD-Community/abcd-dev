@@ -195,6 +195,7 @@ login=Iniciar sesión
 login_capt=Ingrese los caracteres para demostrar que es humano
 login_invcapt=Captcha inválido (Por favor, ingrese las letras correctas ahora)
 login_nocapt=Por favor, ingrese la cadena para demostrar que es humano
+change_password=Cambiar contraseña
 logout=Salir
 ltitles=Listar títulos
 m_addcopies=Agregar copias

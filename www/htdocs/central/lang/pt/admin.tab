@@ -196,6 +196,7 @@ login=Login
 login_capt=Digite os caracteres para provar que você é humano
 login_invcapt=Captcha inválido (Por favor, digite as letras corretas agora)
 login_nocapt=Por favor, digite a string para provar que você é humano
+change_password=Mudar senha
 logout=Sair
 ltitles=Listar títulos
 m_addcopies=Adicionar cópias

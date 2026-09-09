@@ -140,7 +140,7 @@ foreach (array_keys($module_registry) as $registered_slug) {
                         <small> (<?php echo htmlspecialchars($profile ?? '', ENT_QUOTES, $sys_charset); ?>)</small>
                     </a>
                 </li>
-                <li><a href="/central/common/change_password.php" class="bt-dropdown-item"><i class="fas fa-key dropdown-icon"></i> Mudar Senha</a></li>
+                <li><a href="/central/common/change_password.php" class="bt-dropdown-item"><i class="fas fa-key dropdown-icon"></i> <?php echo htmlspecialchars($msgstr["change_password"] ?? 'Change Password', ENT_QUOTES, $sys_charset); ?></a></li>
                 <li class="dropdown-divider"></li>
                 <a href="/central/common/logout.php" class="bt-dropdown-item" title="<?php echo htmlspecialchars($msgstr["logout"] ?? 'Logout', ENT_QUOTES, $sys_charset); ?>">
                     <i class="fas fa-sign-out-alt"></i> <?php echo htmlspecialchars($msgstr["logout"] ?? 'Logout', ENT_QUOTES, $sys_charset); ?>
@@ -169,16 +169,16 @@ foreach (array_keys($module_registry) as $registered_slug) {
         const userDropdownContainer = document.getElementById("user-dropdown-container");
 
         // ------------------------------------------------------------------
-        // Esta topbar normalmente roda DENTRO de um <iframe> (ex.: o iframe
-        // "header" de inicio_main.php). Um iframe recorta seu conteúdo na
-        // altura da própria caixa: nenhum z-index resolve isso, porque não é
-        // uma disputa de empilhamento, é o limite físico do iframe. Como o
-        // iframe é same-origin, aumentamos a altura do PRÓPRIO <iframe> (via
-        // window.frameElement, visto do lado de fora) só enquanto o dropdown
-        // está aberto, e devolvemos ao normal ao fechar. Zero mudanças em
-        // inicio_main.php; se a página não estiver dentro de um iframe (ou
-        // for cross-origin), window.frameElement é null/inacessível e a
-        // função simplesmente não faz nada.
+        // This topbar usually runs INSIDE a <iframe> (e.g., the iframe
+        // “header” from inicio_main.php). An iframe crops its content to the
+        // height of the box itself: no z-index can fix this, because it’s not
+        // a stacking conflict—it’s the physical boundary of the iframe. Since the
+        // iframe is same-origin, we increase the height of the <iframe> ITSELF (via
+        // window.frameElement, viewed from the outside) only while the dropdown
+        // is open, and we return it to normal when it closes. No changes to
+        // inicio_main.php; if the page is not inside an iframe (or
+        // is cross-origin), window.frameElement is null/inaccessible and the
+        // function simply does nothing.
         function syncHostIframeForDropdown(openMenuEl) {
             if (!window.frameElement) return;
             try {
